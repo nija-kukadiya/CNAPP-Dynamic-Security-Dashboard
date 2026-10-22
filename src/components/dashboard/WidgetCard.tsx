@@ -32,8 +32,8 @@ export const WidgetCard: React.FC<WidgetCardProps> = ({ widget, categoryId }) =>
         {/* Cross / Remove Icon Button */}
         <button
           onClick={handleRemove}
-          className="opacity-0 group-hover:opacity-100 focus:opacity-100 p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-150"
-          title="Remove widget from dashboard"
+          className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-150 cursor-pointer"
+          title="Remove widget from category"
           aria-label={`Remove ${widget.name}`}
         >
           <X className="w-4 h-4" />

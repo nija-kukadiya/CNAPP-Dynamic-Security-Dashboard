@@ -4,6 +4,8 @@ import dashboardReducer, {
   addNewWidget,
   removeWidget,
   resetDashboard,
+  setTimeRange,
+  syncCategoryWidgets,
   toggleWidgetSelection,
 } from './dashboardSlice';
 
@@ -13,13 +15,21 @@ const LOCAL_STORAGE_KEY = 'cnapp_dashboard_state_v1';
 const listenerMiddleware = createListenerMiddleware();
 
 listenerMiddleware.startListening({
-  matcher: isAnyOf(addNewWidget, removeWidget, toggleWidgetSelection, resetDashboard),
+  matcher: isAnyOf(
+    addNewWidget,
+    removeWidget,
+    toggleWidgetSelection,
+    syncCategoryWidgets,
+    resetDashboard,
+    setTimeRange
+  ),
   effect: (_action, listenerApi) => {
     try {
       const state = (listenerApi.getState() as RootState).dashboard;
       const dataToSave = {
         categories: state.categories,
         widgetRegistry: state.widgetRegistry,
+        timeRange: state.timeRange,
       };
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToSave));
     } catch {

@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import initialData from '../data/initialDashboardData.json';
-import type { Category, Widget } from '../types/dashboard';
+import type { Category, TimeRange, Widget } from '../types/dashboard';
 
 interface DashboardState {
   categories: Category[];
@@ -10,6 +10,7 @@ interface DashboardState {
   isDrawerOpen: boolean;
   selectedCategoryId: string;
   activeDrawerTab: string;
+  timeRange: TimeRange;
 }
 
 const LOCAL_STORAGE_KEY = 'cnapp_dashboard_state_v1';
@@ -27,7 +28,11 @@ const buildInitialRegistry = (categories: Category[]): Record<string, Widget[]> 
   return registry;
 };
 
-const loadPersistedState = (): { categories: Category[]; widgetRegistry: Record<string, Widget[]> } | null => {
+const loadPersistedState = (): {
+  categories: Category[];
+  widgetRegistry: Record<string, Widget[]>;
+  timeRange?: TimeRange;
+} | null => {
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (!raw) return null;
@@ -41,6 +46,7 @@ const persisted = loadPersistedState();
 
 const initialCategories: Category[] = persisted?.categories || (initialData.categories as Category[]);
 const initialRegistry: Record<string, Widget[]> = persisted?.widgetRegistry || buildInitialRegistry(initialData.categories as Category[]);
+const initialTimeRange: TimeRange = persisted?.timeRange || 'Last 2 days';
 
 const initialState: DashboardState = {
   categories: initialCategories,
@@ -49,6 +55,7 @@ const initialState: DashboardState = {
   isDrawerOpen: false,
   selectedCategoryId: 'cspm',
   activeDrawerTab: 'cspm',
+  timeRange: initialTimeRange,
 };
 
 export const dashboardSlice = createSlice({
@@ -75,6 +82,10 @@ export const dashboardSlice = createSlice({
       state.activeDrawerTab = action.payload;
     },
 
+    setTimeRange: (state, action: PayloadAction<TimeRange>) => {
+      state.timeRange = action.payload;
+    },
+
     // Remove widget directly from category (via ✕ icon or uncheck)
     removeWidget: (
       state,
@@ -98,6 +109,7 @@ export const dashboardSlice = createSlice({
         name,
         type: 'custom-text',
         text,
+        createdAtTimestamp: Date.now(),
         createdAt: new Date().toLocaleDateString('en-US', {
           month: 'short',
           day: 'numeric',
@@ -149,11 +161,27 @@ export const dashboardSlice = createSlice({
       }
     },
 
+    // Commit all staged selections from drawer on Confirm
+    syncCategoryWidgets: (
+      state,
+      action: PayloadAction<Record<string, string[]>>
+    ) => {
+      const stagedMap = action.payload;
+      state.categories.forEach((cat) => {
+        if (stagedMap[cat.id] !== undefined) {
+          const targetIds = new Set(stagedMap[cat.id]);
+          const available = state.widgetRegistry[cat.id] || [];
+          cat.widgets = available.filter((w) => targetIds.has(w.id));
+        }
+      });
+    },
+
     // Reset everything back to the initial seed data
     resetDashboard: (state) => {
       state.categories = initialData.categories as Category[];
       state.widgetRegistry = buildInitialRegistry(initialData.categories as Category[]);
       state.searchQuery = '';
+      state.timeRange = 'Last 2 days';
       try {
         localStorage.removeItem(LOCAL_STORAGE_KEY);
       } catch {
@@ -168,9 +196,11 @@ export const {
   openDrawer,
   closeDrawer,
   setActiveDrawerTab,
+  setTimeRange,
   removeWidget,
   addNewWidget,
   toggleWidgetSelection,
+  syncCategoryWidgets,
   resetDashboard,
 } = dashboardSlice.actions;
 

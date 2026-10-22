@@ -1,5 +1,7 @@
 export type WidgetType = 'donut' | 'stacked-bar' | 'empty-graph' | 'custom-text';
 
+export type TimeRange = 'Last 24 hours' | 'Last 2 days' | 'Last 7 days' | 'Last 30 days';
+
 export interface WidgetMetric {
   label: string;
   value: number;
@@ -15,6 +17,7 @@ export interface Widget {
   totalLabel?: string;
   metrics?: WidgetMetric[];
   createdAt?: string;
+  createdAtTimestamp?: number;
 }
 
 export interface Category {
