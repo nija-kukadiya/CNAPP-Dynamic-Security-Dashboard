@@ -100,8 +100,8 @@ Make sure you have **Node.js** (v18 or higher) and **npm** installed on your mac
 ### 1. Clone or Extract the Project
 ```bash
 # If cloned from Git:
-git clone <repository-url>
-cd "Test Assignment"
+git clone https://github.com/nija-kukadiya/CNAPP-Dynamic-Security-Dashboard.git
+cd CNAPP-Dynamic-Security-Dashboard
 ```
 
 ### 2. Install Dependencies
